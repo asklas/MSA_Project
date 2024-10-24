@@ -1,0 +1,9 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:29092 # Kafka 서버 주소
+    consumer:
+      group-id: org-example-msaProject # 소비자 그룹 ID
+      auto-offset-reset: earliest
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
