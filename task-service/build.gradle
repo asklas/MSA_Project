@@ -21,7 +21,28 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+	// Spring Boot Starter Web
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Spring Boot Starter Data JPA
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// H2 Database (for testing purposes, replace with your DB)
+	runtimeOnly 'com.h2database:h2'
+
+	// Kafka
+	implementation 'org.springframework.kafka:spring-kafka'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Spring Boot Starter Test (for unit testing)
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	implementation 'mysql:mysql-connector-java:8.0.33'
+	}
+
 
 tasks.named('test') {
 	useJUnitPlatform()

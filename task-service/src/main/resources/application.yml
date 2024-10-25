@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:29092 # Kafka ?? ??
+    consumer:
+      group-id: org-example-msaProject # ??? ?? ID
+      auto-offset-reset: earliest
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
