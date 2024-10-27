@@ -1,10 +1,10 @@
-package org.example.msaproject.userservice;
+package org.example.msaproject.eureka;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class UserServiceApplicationTests {
+class EurekaApplicationTests {
 
 	@Test
 	void contextLoads() {

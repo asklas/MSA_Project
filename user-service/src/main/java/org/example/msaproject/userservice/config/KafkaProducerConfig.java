@@ -4,7 +4,6 @@ package org.example.msaproject.userservice.config;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.example.msaproject.userservice.dto.UserDTO;
-import org.example.msaproject.userservice.entity.User;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;

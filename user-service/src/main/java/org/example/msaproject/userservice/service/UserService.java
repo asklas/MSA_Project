@@ -1,18 +1,22 @@
 package org.example.msaproject.userservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.msaproject.userservice.dto.UserDTO;
-import org.example.msaproject.userservice.entity.User;
+import org.example.msaproject.userservice.entity.Users;
 import org.example.msaproject.userservice.repository.UserRepository;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.example.msaproject.userservice.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -21,35 +25,99 @@ public class UserService {
     @Transactional
     public UserDTO.CreateResponseDto register(UserDTO.CreateRequestDto dto) {
         try {
-            //기존의 회원이 있는지 검사
-            Optional<User> user = userRepository.findByUsername(dto.getUsername());
-            if (user.isPresent()) {
+            if (userRepository.existsByUserId(dto.getUserId())) {
                 throw new RuntimeException("해당 아이디로 회원가입한 회원이 존재합니다");
             }
 
             String password = dto.getPassword();
             dto.setPassword(passwordEncoder.encode(password));
 
-            User savedUser = userRepository.save(dto.toEntity());
+            Users savedUsers = userRepository.save(dto.toEntity());
             return new UserDTO.CreateResponseDto("회원가입이 완료되었습니다");
         } catch (Exception e) {
             return null;
         }
     }
 
+    public UserDTO.LoginResponseDto checkLoginIdAndPassword(String userId, String pw) {
+        Optional<Users> opUser = userRepository.findByUserId(userId);
+        log.info("Attempting login with userId: {}, password: {}", userId, pw);
+
+        if (opUser.isEmpty()) {
+            throw new RuntimeException();
+        }
+
+        if (!passwordEncoder.matches(pw, opUser.get().getPassword())) {
+            throw new RuntimeException();
+        }
+
+        Users users = opUser.get();
+        UserDTO.LoginResponseDto responseDto = new UserDTO.LoginResponseDto(users);
+
+        return responseDto;
+    }
     @Transactional
-    public UserDTO.Update update(UserDTO.Update dto) {
-        Optional<User> userOptional = userRepository.findByUsername(dto.getUsername());
+    public void setRefreshToken(Long id, String refreshToken) {
+        Users users = userRepository.findById(id).get();
+        users.updateRefreshToken(refreshToken);
+
+    }
+    public String generateAccessToken(Long id, String userId) {
+        List<String> authorities;
+        if (userId.equals("admin")) {
+            authorities = List.of("ROLE_ADMIN");
+        } else {
+            authorities = List.of("ROLE_MEMBER");
+        }
+
+        return JwtUtil.encodeAccessToken(15,
+                Map.of("id", id.toString(),
+                        "userId", userId,
+                        "authorities", authorities)
+        );
+    }
+    public String generateRefreshToken(Long id, String userId) {
+        return JwtUtil.encodeRefreshToken(60 * 24 * 3,
+                Map.of("id", id.toString(),
+                        "userId", userId)
+        );
+
+    }
+//    public String refreshAccessToken(String refreshToken) {
+//        //화이트리스트 처리
+//        User user = userRepository.findByRefreshToken(refreshToken)
+//                .orElseThrow(() -> MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException());
+//
+//        //리프레시 토큰이 만료되었다면 로그아웃
+//        try {
+//            Claims claims = JwtUtil.decode(refreshToken); // 여기서 에러 처리가 남
+//        } catch (ExpiredJwtException e) {
+//            // 클라이언트한테 만료되었다고 알려주기
+//            throw MemberException.MEMBER_REFRESHTOKEN_EXPIRED.getMemberTaskException();
+//
+//        }
+//
+//
+//        return generateAccessToken(member.getId(), member.getLoginId());
+//    }
+
+    @Transactional
+    public UserDTO.UpdateDTO update(UserDTO.UpdateDTO dto) {
+        Optional<Users> userOptional = userRepository.findByUserId(dto.getUserId());
 
         if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            user.setUsername(dto.getUsername());
-            user.setPassword(passwordEncoder.encode(dto.getPassword()));
-            userRepository.save(user);
+            Users users = userOptional.get();
+            users.setUsername(dto.getUsername());
+            users.setUserId(dto.getUserId());
+            users.setPassword(passwordEncoder.encode(dto.getPassword()));
+            users.setEmail(dto.getEmail());
+            userRepository.save(users);
 
-            return new UserDTO.Update(
-                    user.getUsername(),
-                    user.getPassword()// 잠시 수정
+            return new UserDTO.UpdateDTO(
+                    users.getUsername(),
+                    users.getUserId(),
+                    users.getPassword(),
+                    users.getEmail()
             );
         } else {
             return null;

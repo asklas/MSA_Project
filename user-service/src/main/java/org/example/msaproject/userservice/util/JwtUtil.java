@@ -1,0 +1,73 @@
+package org.example.msaproject.userservice.util;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.Map;
+
+public class JwtUtil {
+
+    private static final String SECRET_KEY = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
+
+    private static final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+
+
+    public static String encodeAccessToken(long minute, Map<String, Object> data) {
+
+        Claims claims = Jwts
+                .claims()
+                .add("data", data)
+                .add("type", "access_token")
+                .build();
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + 1000 * 60 * minute); // 1초 X 60 X
+
+        return Jwts.builder()
+                .subject("MSA_project")
+                .claims(claims)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(key)
+                .compact();
+
+
+    }
+    public static String encodeRefreshToken(long minute,Map<String, Object> data) {
+
+        Claims claims = Jwts
+                .claims()
+                .add("data", data)
+                .add("type", "refresh_token")
+                .build();
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + 1000 * 60 * minute); // 1초 X 60 X
+
+        return Jwts.builder()
+                .subject("MSA_project")
+                .claims(claims)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(key)
+                .compact();
+
+
+    }
+
+    public static Claims decode(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+
+    }
+
+
+}

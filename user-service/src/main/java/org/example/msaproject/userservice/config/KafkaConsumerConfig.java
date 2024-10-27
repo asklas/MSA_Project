@@ -3,7 +3,6 @@ package org.example.msaproject.userservice.config;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.example.msaproject.userservice.dto.UserDTO;
-import org.example.msaproject.userservice.entity.User;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;

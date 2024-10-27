@@ -3,15 +3,20 @@ package org.example.msaproject.userservice.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.msaproject.userservice.dto.UserDTO;
 import org.example.msaproject.userservice.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
     private final KafkaTemplate<String, UserDTO> kafkaTemplate;
     private final UserService userService;
@@ -24,8 +29,30 @@ public class UserController {
         UserDTO.CreateResponseDto createResponseDto = userService.register(user);
         return ResponseEntity.ok(createResponseDto);
     }
-    @PutMapping("/")
-    public ResponseEntity<UserDTO.Update> modify(@Validated @RequestBody UserDTO.Update dto) {
+
+    //로그인
+    @PostMapping("/login")
+    public ResponseEntity<UserDTO.LoginResponseDto> login(@Validated @RequestBody UserDTO.LoginRequestDTO request ) {
+        //인증 성공
+        UserDTO.LoginResponseDto responseDto = userService.checkLoginIdAndPassword(request.getUserId(), request.getPassword());
+
+        Long id = responseDto.getId();
+        String userId = responseDto.getUserId();
+
+        String accessToken = userService.generateAccessToken(id, userId);
+        String refreshToken = userService.generateRefreshToken(id, userId);
+
+        userService.setRefreshToken(id, refreshToken);
+
+        responseDto.setAccessToken(accessToken);
+        responseDto.setRefreshToken(refreshToken);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+
+    @PutMapping("/update")
+    public ResponseEntity<UserDTO.UpdateDTO> modify(@Validated @RequestBody UserDTO.UpdateDTO dto) {
         return ResponseEntity.ok(userService.update(dto));
     }
 }

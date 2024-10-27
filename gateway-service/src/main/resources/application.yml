@@ -1,22 +1,15 @@
+server:
+  port: 8080
+
 spring:
   cloud:
     gateway:
       routes:
-        - id: user-service
-          uri: lb://USER-SERVICE  # Eureka ??? ??? ??
+        - id: msa_user
+          uri: lb://user-service
           predicates:
-            - Path=/api/v1/users/**  # ??? ?? API ??
-        - id: task-service
-          uri: lb://TASK-SERVICE  # Eureka ??? ??? ??
+            - Path=/api/v1/users/**
+        - id: msa_task
+          uri: lb://task-service
           predicates:
-            - Path=/api/v1/tasks/**  # ?? ?? API ??
-
-server:
-  port: 8080  # ?????? ??? ?? ??
-
-# ??? ?? Actuator ??
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+            - Path=/api/v1/tasks/**

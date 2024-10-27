@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
-import org.example.msaproject.userservice.entity.User;
+import org.example.msaproject.userservice.entity.Users;
 
 @Getter
 @Builder
@@ -14,13 +14,17 @@ public class UserDTO {
     @AllArgsConstructor
     public static class CreateRequestDto {
         private String username;
+        private String userId;
         private String password;
+        private String email;
 
 
-        public User toEntity() {
-            return User.builder()
+        public Users toEntity() {
+            return Users.builder()
                     .username(username)
+                    .userId(userId)
                     .password(password)
+                    .email(email)
                     .build();
         }
     }
@@ -34,9 +38,31 @@ public class UserDTO {
     }
 
     @Data
-    @AllArgsConstructor
-    public static class Update {
-        private String username;
+    public static class LoginRequestDTO {
+        private String userId;
         private String password;
+    }
+    @Data
+    public static class LoginResponseDto {
+        private long id;
+        private String userId;
+        private String username;
+        private String accessToken;
+        private String refreshToken;
+
+        public LoginResponseDto(Users users) {
+            this.id = users.getId();
+            this.userId = users.getUserId();
+            this.username = users.getUsername();
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class UpdateDTO {
+        private String username;
+        private String userId;
+        private String password;
+        private String email;
     }
 }
