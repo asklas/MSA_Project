@@ -14,11 +14,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserController {
-    private final KafkaTemplate<String, UserDTO> kafkaTemplate;
     private final UserService userService;
 
     private static final String TOPIC = "user";
@@ -48,6 +49,11 @@ public class UserController {
         responseDto.setRefreshToken(refreshToken);
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshAccessToken(@RequestBody String token) {
+        return ResponseEntity.ok(userService.refreshAccessToken(token));
     }
 
 

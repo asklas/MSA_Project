@@ -5,6 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import org.example.msaproject.userservice.entity.Users;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Getter
 @Builder
@@ -17,6 +21,7 @@ public class UserDTO {
         private String userId;
         private String password;
         private String email;
+        private String role;
 
 
         public Users toEntity() {
@@ -25,6 +30,7 @@ public class UserDTO {
                     .userId(userId)
                     .password(password)
                     .email(email)
+                    .role(role)
                     .build();
         }
     }
@@ -47,6 +53,7 @@ public class UserDTO {
         private long id;
         private String userId;
         private String username;
+        private String role;
         private String accessToken;
         private String refreshToken;
 
@@ -54,6 +61,7 @@ public class UserDTO {
             this.id = users.getId();
             this.userId = users.getUserId();
             this.username = users.getUsername();
+            this.role = users.getRole();
         }
     }
 

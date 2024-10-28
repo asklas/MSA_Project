@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<Users, Long> {
     Boolean existsByUserId(String userId);
     Optional<Users> findByUserId(String userId);
+    Optional<Users> findByRefreshToken(String refreshToken);
 }

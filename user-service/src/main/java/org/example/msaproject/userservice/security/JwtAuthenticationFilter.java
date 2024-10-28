@@ -27,6 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private JwtUtil jwtUtil;
 
 
     @Override
@@ -38,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String token = bearerToken.substring("Bearer ".length());
 
                 //위변조 체크 및 디코드
-                Claims claims = JwtUtil.decode(token);
+                Claims claims = jwtUtil.decode(token);
 
                 //claims의 정보들 파싱
                 Map<String, Object> data = (Map<String, Object>) claims.get("data");

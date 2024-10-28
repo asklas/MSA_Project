@@ -1,11 +1,15 @@
 package org.example.msaproject.userservice.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.example.msaproject.userservice.dto.UserDTO;
 import org.example.msaproject.userservice.entity.Users;
 import org.example.msaproject.userservice.repository.UserRepository;
 import org.example.msaproject.userservice.util.JwtUtil;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +24,8 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 //    @KafkaListener(topics = "user", groupId = "org-example-msaProject")
 
     @Transactional
@@ -31,8 +37,10 @@ public class UserService {
 
             String password = dto.getPassword();
             dto.setPassword(passwordEncoder.encode(password));
+            dto.setRole("ROLE_USER");
 
             Users savedUsers = userRepository.save(dto.toEntity());
+            kafkaTemplate.send("msa_user", "회원가입 완료");
             return new UserDTO.CreateResponseDto("회원가입이 완료되었습니다");
         } catch (Exception e) {
             return null;
@@ -53,7 +61,7 @@ public class UserService {
 
         Users users = opUser.get();
         UserDTO.LoginResponseDto responseDto = new UserDTO.LoginResponseDto(users);
-
+        kafkaTemplate.send("msa_user", "로그인 완료");
         return responseDto;
     }
     @Transactional
@@ -70,36 +78,34 @@ public class UserService {
             authorities = List.of("ROLE_MEMBER");
         }
 
-        return JwtUtil.encodeAccessToken(15,
+        return jwtUtil.encodeAccessToken(15,
                 Map.of("id", id.toString(),
                         "userId", userId,
                         "authorities", authorities)
         );
     }
     public String generateRefreshToken(Long id, String userId) {
-        return JwtUtil.encodeRefreshToken(60 * 24 * 3,
+        return jwtUtil.encodeRefreshToken(60 * 24 * 3,
                 Map.of("id", id.toString(),
                         "userId", userId)
         );
 
     }
-//    public String refreshAccessToken(String refreshToken) {
-//        //화이트리스트 처리
-//        User user = userRepository.findByRefreshToken(refreshToken)
-//                .orElseThrow(() -> MemberException.MEMBER_LOGIN_DENIED.getMemberTaskException());
-//
-//        //리프레시 토큰이 만료되었다면 로그아웃
-//        try {
-//            Claims claims = JwtUtil.decode(refreshToken); // 여기서 에러 처리가 남
-//        } catch (ExpiredJwtException e) {
-//            // 클라이언트한테 만료되었다고 알려주기
-//            throw MemberException.MEMBER_REFRESHTOKEN_EXPIRED.getMemberTaskException();
-//
-//        }
-//
-//
-//        return generateAccessToken(member.getId(), member.getLoginId());
-//    }
+    public String refreshAccessToken(String refreshToken) {
+        //화이트리스트 처리
+        Users users = userRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Refresh token expired"));
+
+        //리프레시 토큰이 만료되었다면 로그아웃
+        try {
+            Claims claims = jwtUtil.decode(refreshToken);
+        } catch (ExpiredJwtException e) {
+            // 클라이언트한테 만료되었다고 알려주기
+            throw new RuntimeException("Refresh token expired");
+
+        }
+        return generateAccessToken(users.getId(), users.getUserId());
+    }
 
     @Transactional
     public UserDTO.UpdateDTO update(UserDTO.UpdateDTO dto) {

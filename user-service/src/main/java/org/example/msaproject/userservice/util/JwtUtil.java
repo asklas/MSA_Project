@@ -3,21 +3,29 @@ package org.example.msaproject.userservice.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+@Component
 public class JwtUtil {
+    private final String secret;
+    private final SecretKey key;
 
-    private static final String SECRET_KEY = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
+    public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
+        this.secret = secret;
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
-    private static final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    public String getSecretKey() {
+        return this.secret;
+    }
 
-
-    public static String encodeAccessToken(long minute, Map<String, Object> data) {
-
+    public String encodeAccessToken(long minute, Map<String, Object> data) {
         Claims claims = Jwts
                 .claims()
                 .add("data", data)
@@ -34,11 +42,9 @@ public class JwtUtil {
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
-
-
     }
-    public static String encodeRefreshToken(long minute,Map<String, Object> data) {
 
+    public String encodeRefreshToken(long minute, Map<String, Object> data) {
         Claims claims = Jwts
                 .claims()
                 .add("data", data)
@@ -55,19 +61,16 @@ public class JwtUtil {
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
-
-
     }
 
-    public static Claims decode(String token) {
+    public Claims decode(String token) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
-
     }
-
-
+    public boolean isTokenExpired(String token) {
+        return decode(token).getExpiration().before(new Date());
+    }
 }
