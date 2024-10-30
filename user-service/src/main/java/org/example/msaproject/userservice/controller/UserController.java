@@ -33,8 +33,8 @@ public class UserController {
 
     //로그인
     @PostMapping("/login")
-    public ResponseEntity<UserDTO.LoginResponseDto> login(@Validated @RequestBody UserDTO.LoginRequestDTO request ) {
-        //인증 성공
+    public ResponseEntity<UserDTO.LoginResponseDto> login(@Validated @RequestBody UserDTO.LoginRequestDTO request) {
+        // 인증 성공
         UserDTO.LoginResponseDto responseDto = userService.checkLoginIdAndPassword(request.getUserId(), request.getPassword());
 
         Long id = responseDto.getId();
@@ -45,11 +45,11 @@ public class UserController {
 
         userService.setRefreshToken(id, refreshToken);
 
-        responseDto.setAccessToken(accessToken);
-        responseDto.setRefreshToken(refreshToken);
-
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + accessToken)
+                .body(responseDto);
     }
+
 
     @PostMapping("/refresh")
     public ResponseEntity<String> refreshAccessToken(@RequestBody String token) {

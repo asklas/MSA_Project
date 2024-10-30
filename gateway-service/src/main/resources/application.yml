@@ -9,6 +9,8 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/v1/users/**
+          filters:
+            - name: UserFilter
         - id: msa_task
           uri: lb://task-service
           predicates:

@@ -53,15 +53,12 @@ public class UserDTO {
         private long id;
         private String userId;
         private String username;
-        private String role;
-        private String accessToken;
-        private String refreshToken;
+
 
         public LoginResponseDto(Users users) {
             this.id = users.getId();
             this.userId = users.getUserId();
             this.username = users.getUsername();
-            this.role = users.getRole();
         }
     }
 
