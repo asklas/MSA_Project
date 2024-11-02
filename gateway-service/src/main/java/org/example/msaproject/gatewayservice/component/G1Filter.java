@@ -29,10 +29,7 @@ public class G1Filter implements GlobalFilter, Ordered {
         System.out.println(accessToken);
 
         return chain.filter(exchange)
-                .then(Mono.fromRunnable(() -> {
-
-                    System.out.println("post global filter order -1");
-                }));
+                .then(Mono.fromRunnable(() -> System.out.println("post global filter order -1")));
     }
 
     @Override
