@@ -5,6 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
+import org.example.msaproject.userservice.config.KafkaProducerConfig;
 import org.example.msaproject.userservice.dto.UserDTO;
 import org.example.msaproject.userservice.entity.Users;
 import org.example.msaproject.userservice.repository.UserRepository;
@@ -25,7 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaProducerConfig kafkaTemplate;
 //    @KafkaListener(topics = "user", groupId = "org-example-msaProject")
 
     @Transactional
@@ -40,7 +41,7 @@ public class UserService {
             dto.setRole("ROLE_USER");
 
             Users savedUsers = userRepository.save(dto.toEntity());
-            kafkaTemplate.send("msa_user", "회원가입 완료");
+            kafkaTemplate.sendMessage("msa_user", savedUsers);
             return new UserDTO.CreateResponseDto("회원가입이 완료되었습니다");
         } catch (Exception e) {
             return null;
@@ -61,7 +62,7 @@ public class UserService {
 
         Users users = opUser.get();
         UserDTO.LoginResponseDto responseDto = new UserDTO.LoginResponseDto(users);
-        kafkaTemplate.send("msa_user", "로그인 완료");
+        kafkaTemplate.sendMessage("msa_user", responseDto);
         return responseDto;
     }
     @Transactional

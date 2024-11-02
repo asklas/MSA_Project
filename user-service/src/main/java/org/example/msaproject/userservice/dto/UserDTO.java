@@ -54,7 +54,6 @@ public class UserDTO {
         private String userId;
         private String username;
 
-
         public LoginResponseDto(Users users) {
             this.id = users.getId();
             this.userId = users.getUserId();
