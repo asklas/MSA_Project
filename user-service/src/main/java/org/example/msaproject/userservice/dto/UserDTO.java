@@ -69,4 +69,12 @@ public class UserDTO {
         private String password;
         private String email;
     }
+
+    @Data
+    @AllArgsConstructor
+    public static class getResponseDTO {
+        private String username;
+        private String userId;
+        private String email;
+    }
 }

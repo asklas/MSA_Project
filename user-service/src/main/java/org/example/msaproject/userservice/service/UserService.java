@@ -130,6 +130,31 @@ public class UserService {
             return null;
         }
     }
+    @Transactional
+    public UserDTO.getResponseDTO get(Long id) {
+        Optional<Users> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            Users users = userOptional.get();
+            return new UserDTO.getResponseDTO(
+                    users.getUsername(),
+                    users.getUserId(),
+                    users.getEmail()
+            );
+        } else {
+            return null;
+        }
+    }
+
+    public Map<String,String> delete(Long id) {
+        Optional<Users> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            Users users = userOptional.get();
+            userRepository.delete(users);
+            return Map.of("result", "success");
+        } else {
+            return Map.of("result", "fail");
+        }
+    }
 }
 
 

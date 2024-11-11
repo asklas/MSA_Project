@@ -2,6 +2,7 @@ package org.example.msaproject.userservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.msaproject.userservice.dto.UserDTO;
+import org.example.msaproject.userservice.security.SecurityUser;
 import org.example.msaproject.userservice.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,16 @@ public class UserController {
     @PutMapping("/update")
     public ResponseEntity<UserDTO.UpdateDTO> modify(@Validated @RequestBody UserDTO.UpdateDTO dto) {
         return ResponseEntity.ok(userService.update(dto));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO.getResponseDTO> read(@AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(userService.get(user.getId()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String,String>> delete(@AuthenticationPrincipal SecurityUser user) {
+        return ResponseEntity.ok(userService.delete(user.getId()));
     }
 }
 
